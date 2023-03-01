@@ -32,7 +32,7 @@ public class Parser {
      * 4 - Command value
      * 5 - Arithmetical/logical command
      */
-    private final Pattern patternCompiled = Pattern.compile("((push|pop) (local|argument|static|constant|this|that|that|that) (\\S+))|(add|sub|neg|eq|gt|lt|and|or|not)");
+    private final Pattern patternCompiled = Pattern.compile("((push|pop) (local|argument|static|constant|this|that|that|that|temp|pointer) (\\S+))|(add|sub|neg|eq|gt|lt|and|or|not)");
 
 
     public Parser(String textFileLocation) {

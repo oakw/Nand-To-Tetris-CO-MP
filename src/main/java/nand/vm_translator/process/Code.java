@@ -3,6 +3,8 @@ package nand.vm_translator.process;
 import nand.vm_translator.process.command.ArithmeticType;
 import nand.vm_translator.process.command.CommandType;
 import nand.vm_translator.process.command.SegmentType;
+import java.util.Arrays;
+
 
 public class Code {
 
@@ -38,50 +40,68 @@ public class Code {
      * Returns the whole code of supplied pop/push operation
      */
     public String getPushPop(CommandType commandType, String commandSegment, int index) {
-        String valueInstruction = "D=M"; // In default, the operation value is located in some memory location
+        String valueInstruction = "D=M"; // By default, memory location is based on value in another field
         SegmentType segment = SegmentType.valueOfLabel(commandSegment);
 
         if (segment == null) {
             return "";
         } else if (segment == SegmentType.S_CONSTANT) {
-            valueInstruction = "D=A"; // If constant passed, the operation value is located in the A register
-        } else {
-            index = getMemoryLocation(segment, index);
+            return pushConstantCode(commandType, segment, index);
+        } else if (Arrays.asList(SegmentType.S_TEMP, SegmentType.S_STATIC, SegmentType.S_POINTER).contains(segment)) {
+            valueInstruction = "D=A"; // Memory location is based on index provided
         }
 
         switch (commandType) {
             case C_PUSH:
                 return String.format("""
-                    // %1$s %2$s %3$s
+                        // %s %s %3$s
+                        @%4$s
+                        %5$s
+                        @%3$s
+                        A=D+A
+                        D=M
+                        @SP
+                        A=M
+                        M=D
+                        @SP
+                        M=M+1""", commandType.label, segment.label, index, segment.startIndex, valueInstruction);
+            case C_POP:
+                return String.format("""
+                        // %s %s %3$s
+                        @%4$s
+                        %5$s
+                        @%3$s
+                        D=D+A
+                        // Save the location temporarily
+                        @R15
+                        M=D
+                        @SP
+                        A=M-1
+                        D=M
+                        M=0
+                        @R15
+                        A=M
+                        M=D
+                        @SP
+                        M=M-1""", commandType.label, segment.label, index, segment.startIndex, valueInstruction);
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Returns code of pushed constant
+     */
+    private String pushConstantCode(CommandType commandType, SegmentType segment, int constant) {
+        return String.format("""
+                    // %s %s %3$s
                     @%3$s
-                    %4$s
+                    D=A
                     @SP
                     A=M
                     M=D
                     @SP
-                    M=M+1""", commandType.label, segment.label, index, valueInstruction);
-            case C_POP:
-                return String.format("""
-                    // %1$s %2$s %3$s
-                    @SP
-                    A=M-1
-                    D=M
-                    M=0
-                    @%3$s
-                    M=D
-                    @SP
-                    M=M-1""", commandType.label, segment, index);
-            default: return "";
-        }
-    }
-
-
-    private int getMemoryLocation(SegmentType segment, int index) {
-        // TODO: finish
-
-        switch (segment) {
-            default: return segment.startIndex + index;
-        }
+                    M=M+1""", commandType.label, segment.label, constant);
     }
 
     /**
