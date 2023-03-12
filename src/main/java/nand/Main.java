@@ -75,10 +75,10 @@ public class Main {
                            [-i] | --input      : filename of input (.asm) file
                            [-o] | --output     : filename of output (.hack) file
                         vmTranslator
-                           [-i] | --input      : filename of input (.wm) file
+                           [-i] | --input      : filename of input (.vm) file or folder containing them
                            [-o] | --output     : filename of output (.asm) file
                            
-                        -h   | --help       : display this help message
+                           -h   | --help       : display this help message
                     """);
     }
 }

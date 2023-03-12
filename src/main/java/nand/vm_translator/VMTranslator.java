@@ -1,6 +1,6 @@
 package nand.vm_translator;
 import nand.vm_translator.process.*;
-import nand.vm_translator.process.command.CommandType;
+import nand.vm_translator.process.command.SegmentType;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -15,7 +15,7 @@ public class VMTranslator {
 
         BufferedWriter outputWriter = new BufferedWriter(new FileWriter(outputFile));
 
-        // Set stack pointer to 256 initially
+        // Set stack pointer to 256 initially. Bootstrap code.
         outputWriter.write("""
                 // Set stack pointer to 256
                 @256
@@ -24,17 +24,27 @@ public class VMTranslator {
                 M=D
                 """);
 
+        // Sys.init is executed first
+        if (parser.currentFileName.equals("Sys.vm")) {
+            outputWriter.write(code.getFunctionCall("Sys.init", 0));
+        }
+
         while (parser.hasMoreLines()) {
-            String line = "";
+            String lines = "";
             parser.advance();
 
-            if (parser.commandType() == CommandType.C_ARITHMETIC) {
-                line = code.getArithmetic(parser.arg1());
-            } else if (parser.commandType() == CommandType.C_PUSH || parser.commandType() == CommandType.C_POP){
-                line = code.getPushPop(parser.commandType(), parser.arg1(), parser.arg2());
+            switch (parser.commandType()) {
+                case C_ARITHMETIC -> lines = code.getArithmetic(parser.arg1());
+                case C_PUSH, C_POP -> lines = code.getPushPop(parser.commandType(), SegmentType.valueOfLabel(parser.arg1()), parser.arg2(), false, parser.currentFileName);
+                case C_LABEL -> lines = code.getLabel(parser.arg1());
+                case C_GOTO -> lines = code.getGoTo(parser.arg1());
+                case C_IF -> lines = code.getIfGoTo(parser.arg1());
+                case C_FUNCTION -> lines = code.getFunctionDef(parser.arg1(), parser.arg2());
+                case C_CALL -> lines = code.getFunctionCall(parser.arg1(), parser.arg2());
+                case C_RETURN -> lines = code.getReturn();
             }
 
-            outputWriter.write(String.format("%s\n", line));
+            outputWriter.write(String.format("%s\n", lines));
         }
 
         outputWriter.write("""
