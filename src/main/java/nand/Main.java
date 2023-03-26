@@ -1,6 +1,7 @@
 package nand;
 
 import nand.assembler.HackAssembler;
+import nand.jack_analyzer.JackAnalyzer;
 import nand.vm_translator.VMTranslator;
 
 import java.io.FileNotFoundException;
@@ -10,6 +11,7 @@ import java.util.List;
 public class Main {
     public static final int ASSEMBLER = 0;
     public static final int VM_TRANSLATOR = 1;
+    public static final int JACK_ANALYZER = 2;
 
     public static void main(String[] args) {
         List<String> cmdArguments = Arrays.asList(args);
@@ -28,6 +30,7 @@ public class Main {
                 case "-i", "--input" -> inputFile = i + 1 != cmdArguments.size() ? cmdArguments.get(i + 1) : "";
                 case "-o", "--output" -> outputFile = i + 1 != cmdArguments.size() ? cmdArguments.get(i + 1) : "";
                 case "vmTranslator" -> toolChosen = VM_TRANSLATOR;
+                case "jackAnalyzer" -> toolChosen = JACK_ANALYZER;
                 case "-h", "--help" -> {
                     usage();
                     return;
@@ -51,6 +54,11 @@ public class Main {
                     System.out.println("VM code translation started\r");
                     VMTranslator.translate(inputFile, outputFile);
                 }
+                case JACK_ANALYZER: {
+                    System.out.println("Jack analyzer started\r");
+                    JackAnalyzer.translate(inputFile, outputFile);
+
+                }
 
                 System.out.printf("Translation ended. Output in file %s%n", outputFile);
             }
@@ -66,7 +74,7 @@ public class Main {
 
     private static void usage() {
         System.out.println("""
-                    Assembler of Hack machine language and virtual machine code translator
+                    Assembler of Hack machine language and virtual machine compilationEngine translator
                     Based on https://www.nand2tetris.org/
                     Made by Martins P, 2023
                      
