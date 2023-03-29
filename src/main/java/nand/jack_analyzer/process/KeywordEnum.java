@@ -1,7 +1,7 @@
 package nand.jack_analyzer.process;
 
 /**
- * Type of keyword
+ * Type of keywords in .jack language
  */
 public enum KeywordEnum {
 
@@ -29,7 +29,7 @@ public enum KeywordEnum {
 
     public final String label;
 
-    KeywordEnum(String label, Object... content) {
+    KeywordEnum(String label) {
         this.label = label;
     }
 

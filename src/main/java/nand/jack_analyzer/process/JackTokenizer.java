@@ -13,14 +13,9 @@ import java.util.stream.IntStream;
 public class JackTokenizer {
 
     private RandomAccessFile vmFile;
-
-    private String currentLine = ""; // Current line content
     public int lineIndex = 0; // Current line number
 
-    private List<String> lineParts = new ArrayList<>();
-
     public ArrayList<Token> tokens = new ArrayList<>();
-
 
 
     /**
@@ -42,7 +37,7 @@ public class JackTokenizer {
     public JackTokenizer(String textFileLocation) {
         File file = new File(textFileLocation);
         if (file.isDirectory() && file.listFiles() != null) {
-            // If directory passed, parse all '.jack' files from it. Sys.vm should be first
+            // If directory passed, parse all '.jack' files from it
             for (File child: Objects.requireNonNull(file.listFiles())) {
                 if (child.getName().endsWith(".jack")) {
                     filesInPath.add(child);
@@ -57,7 +52,6 @@ public class JackTokenizer {
 
     /**
      * Checks whether there are lines in the file left. Otherwise, go to the next file in folder if any.
-     *
      * @throws IOException Failed reading from file results in an exception
      */
     public boolean hasMoreLines() throws IOException {
@@ -74,18 +68,23 @@ public class JackTokenizer {
     }
 
     /**
-     * Move to the next line in parser
+     * Move to the next line in parser and tokenize it, adding all to the list of Tokens
      *
      * @throws IOException Failed next line reading results in an exception
      */
     public void tokenizeLine() throws IOException {
         lineIndex += 1;
-        currentLine = vmFile.readLine().trim();
+        // Current line content
+        String currentLine = vmFile.readLine();
+        if (currentLine == null) {
+            return;
+        }
+        currentLine = currentLine.trim();
 
-        lineParts = getMatches(currentLine);
+        List<String> lineParts;
 
         // Go to next line if current is insignificant
-        if (Objects.equals(currentLine, "") || currentLine.startsWith("/")) {
+        if (Objects.equals(currentLine, "") || currentLine.startsWith("/") || currentLine.startsWith("*")) {
             tokenizeLine();
             return;
         }
@@ -93,6 +92,11 @@ public class JackTokenizer {
 
         while(currentLine.length() > 0) {
             currentLine = currentLine.stripLeading();
+
+            if (Objects.equals(currentLine, "") || currentLine.startsWith("//")) {
+                break;
+            }
+
             lineParts = getMatches(currentLine);
             Token token;
 
@@ -128,12 +132,21 @@ public class JackTokenizer {
                 continue;
             }
 
+            token.originFilePath = currentFileName;
             token.lineNumber = lineIndex;
             tokens.add(token);
         }
 
     }
 
+    private List<String> getMatches(String line) {
+        return patternCompiled
+                .matcher(line)
+                .results()
+                .flatMap(mr -> IntStream.rangeClosed(1, mr.groupCount())
+                        .mapToObj(mr::group))
+                .collect(Collectors.toList());
+    }
 
     /**
      * Gets next file from filesInPath. Will continue reading from it
@@ -141,13 +154,20 @@ public class JackTokenizer {
     private void getNextFile() {
         try {
             vmFile = new RandomAccessFile(filesInPath.get(0), "r");
-            currentFileName = filesInPath.get(0).getName();
+            lineIndex = 0;
+            currentFileName = filesInPath.get(0).getAbsolutePath();
             filesInPath.remove(0);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Returns the provided string without the first at the beginning
+     * @param severalWords Where to remove from
+     * @param first What to remove
+     * @return Shortened string
+     */
     private String getAllExceptFirst(String severalWords, String first) {
         if (severalWords.length() > first.length()) {
             return severalWords.substring(severalWords.indexOf(first) + first.length());
@@ -156,16 +176,11 @@ public class JackTokenizer {
         }
     }
 
+    /**
+     * Returns the provided string without the first char at the beginning
+     */
     private String getAllExceptFirstChar(String severalWords) {
         return severalWords.substring(1);
     }
 
-    public List<String> getMatches(String line) {
-        return patternCompiled
-                .matcher(line)
-                .results()
-                .flatMap(mr -> IntStream.rangeClosed(1, mr.groupCount())
-                        .mapToObj(mr::group))
-                .collect(Collectors.toList());
-    }
 }

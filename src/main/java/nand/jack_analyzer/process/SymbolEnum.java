@@ -1,37 +1,37 @@
 package nand.jack_analyzer.process;
 
 /**
- * Type of symbol
+ * Type of symbol available in .jack
  */
 public enum SymbolEnum {
 
-    S_LEFTBRACKET('{'),
-    S_RIGHTBRACKET('}'),
-    S_LEFTBRACET('('),
-    S_RIGHTBRACET(')'),
-    S_LEFTSQUAREBRACKET('['),
-    S_RIGHTSQUAREBRACKET(']'),
-    S_DOT('.'),
-    S_COMMA(','),
-    S_SEMICOLON(';'),
-    S_PLUS('+'),
-    S_MINUS('-'),
-    S_ASTERIX('*'),
-    S_SLASH('/'),
-    S_AND('&'),
-    S_COL('|'),
-    S_LESSTHAN('<'),
-    S_LARGETHAN('>'),
-    S_EQUALS('='),
-    S_TILDE('~');
-
+    S_LEFTBRACKET('{', false),
+    S_RIGHTBRACKET('}', false),
+    S_LEFTBRACET('(', false),
+    S_RIGHTBRACET(')', false),
+    S_LEFTSQUAREBRACKET('[', false),
+    S_RIGHTSQUAREBRACKET(']', false),
+    S_DOT('.', false),
+    S_COMMA(',', false),
+    S_SEMICOLON(';', false),
+    S_PLUS('+', true),
+    S_MINUS('-', true),
+    S_ASTERIX('*', true),
+    S_SLASH('/', true),
+    S_AND('&', true),
+    S_COL('|', true),
+    S_LESSTHAN('<', true),
+    S_LARGETHAN('>', true),
+    S_EQUALS('=', true),
+    S_TILDE('~', false);
 
     public final char label;
+    public final boolean isOperand;
 
-    SymbolEnum(char label, Object... content) {
+    SymbolEnum(char label, boolean isOperand) {
         this.label = label;
+        this.isOperand = isOperand;
     }
-
 
     public static SymbolEnum valueOfLabel(char label) {
         for (SymbolEnum e : values()) {

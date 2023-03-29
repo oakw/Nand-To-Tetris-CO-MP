@@ -4,15 +4,20 @@ public class Token {
     public String named;
     public Boolean isNull;
     public int lineNumber;
+    public String originFilePath;
 
     public Token() {
         isNull = false;
     }
 
+    public boolean isOfType(Class<?> cl) {
+        return this.getClass() == cl;
+    }
 }
 
 class Keyword extends Token {
     public KeywordEnum type;
+
     public Keyword(String key) {
         if (KeywordEnum.valueOfLabel(key) != null) {
             named = key;
@@ -35,37 +40,32 @@ class Symbol extends Token {
     }
 }
 
-abstract class Constant extends Token {
-    public Constant() {}
-}
+abstract class Constant extends Token {}
 
 class IntegerConstant extends Constant {
     public int constant;
+
     public IntegerConstant(String value) {
         try {
             constant = Integer.parseInt(value);
-            named = value;
         } catch (NumberFormatException e) {
             isNull = true;
-
         }
     }
 }
 
 class StringConstant extends Constant {
-
     public String constant;
+
     public StringConstant(String value) {
         constant = value;
-        named = value;
     }
 }
 
 class Identifier extends Token {
-
     public String name;
+
     public Identifier(String value) {
-        named = value;
         name = value;
     }
 }

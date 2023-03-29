@@ -38,8 +38,8 @@ public class Main {
             }
         }
 
-        if (inputFile.isEmpty() || outputFile.isEmpty()) {
-            System.out.println("No input or output file specified");
+        if (inputFile.isEmpty()) {
+            System.out.println("No input file specified");
             usage();
             return;
         }
@@ -56,8 +56,7 @@ public class Main {
                 }
                 case JACK_ANALYZER: {
                     System.out.println("Jack analyzer started\r");
-                    JackAnalyzer.translate(inputFile, outputFile);
-
+                    JackAnalyzer.translate(inputFile);
                 }
 
                 System.out.printf("Translation ended. Output in file %s%n", outputFile);
@@ -74,7 +73,7 @@ public class Main {
 
     private static void usage() {
         System.out.println("""
-                    Assembler of Hack machine language and virtual machine compilationEngine translator
+                    Assembler of Hack machine language translator, virtual machine code and jack compilation engine
                     Based on https://www.nand2tetris.org/
                     Made by Martins P, 2023
                      
@@ -85,6 +84,8 @@ public class Main {
                         vmTranslator
                            [-i] | --input      : filename of input (.vm) file or folder containing them
                            [-o] | --output     : filename of output (.asm) file
+                        jackAnalyzer
+                           [-i] | --input      : filename of input (.jack) file or folder containing them
                            
                            -h   | --help       : display this help message
                     """);
