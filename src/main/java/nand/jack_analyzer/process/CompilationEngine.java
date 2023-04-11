@@ -23,6 +23,8 @@ public class CompilationEngine {
     private Token thisToken;
     public Document doc;
 
+    public ArrayList<String> fileNames = new ArrayList<>();
+
     // routine and subRoutineBody is used recursively, yet independently, so should be accessible in global scope
     private Element routine;
     private Element subRoutineBody;
@@ -45,8 +47,10 @@ public class CompilationEngine {
     /**
      * Transform prepared doc to the .xml file
      */
-    public void transformToFile() throws TransformerException {
-        File outputFile = new File(thisToken.originFilePath.replace(".jack", ".xml"));
+    public void transformToFile() throws TransformerException, IOException {
+        String outputFilePath = thisToken.originFilePath.replace(".jack", ".xml");
+        FileOutputStream outputFile = new FileOutputStream(outputFilePath);
+        fileNames.add(thisToken.originFilePath);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -56,11 +60,13 @@ public class CompilationEngine {
         transformer.setOutputProperty(OutputKeys.METHOD, "html");
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(source, result);
+        outputFile.close();
+
 
         // Built in parser creates an XML which does not comply to the text comparer
         try {
-            RandomAccessFile input = new RandomAccessFile(outputFile, "rw");
-            RandomAccessFile output = new RandomAccessFile(outputFile, "rw");
+            RandomAccessFile input = new RandomAccessFile(outputFilePath, "rw");
+            RandomAccessFile output = new RandomAccessFile(outputFilePath, "rw");
             long length = 0;
 
             while (input.getFilePointer() < input.length()) {
@@ -74,6 +80,9 @@ public class CompilationEngine {
                 output.writeBytes(line);
             }
             output.setLength(length);
+
+            input.close();
+            output.close();
 
         } catch (IOException e) {
             e.printStackTrace();

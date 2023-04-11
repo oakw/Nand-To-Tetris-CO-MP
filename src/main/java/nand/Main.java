@@ -2,6 +2,7 @@ package nand;
 
 import nand.assembler.HackAssembler;
 import nand.jack_analyzer.JackAnalyzer;
+import nand.jack_compiler.JackCompiler;
 import nand.vm_translator.VMTranslator;
 
 import java.io.FileNotFoundException;
@@ -12,6 +13,7 @@ public class Main {
     public static final int ASSEMBLER = 0;
     public static final int VM_TRANSLATOR = 1;
     public static final int JACK_ANALYZER = 2;
+    public static final int JACK_COMPILER = 3;
 
     public static void main(String[] args) {
         List<String> cmdArguments = Arrays.asList(args);
@@ -31,6 +33,7 @@ public class Main {
                 case "-o", "--output" -> outputFile = i + 1 != cmdArguments.size() ? cmdArguments.get(i + 1) : "";
                 case "vmTranslator" -> toolChosen = VM_TRANSLATOR;
                 case "jackAnalyzer" -> toolChosen = JACK_ANALYZER;
+                case "jackCompiler" -> toolChosen = JACK_COMPILER;
                 case "-h", "--help" -> {
                     usage();
                     return;
@@ -57,6 +60,10 @@ public class Main {
                 case JACK_ANALYZER: {
                     System.out.println("Jack analyzer started\r");
                     JackAnalyzer.translate(inputFile);
+                }
+                case JACK_COMPILER: {
+                    System.out.println("Jack compiler started\r");
+                    JackCompiler.translate(inputFile);
                 }
 
                 System.out.printf("Translation ended. Output in file %s%n", outputFile);
@@ -85,6 +92,8 @@ public class Main {
                            [-i] | --input      : filename of input (.vm) file or folder containing them
                            [-o] | --output     : filename of output (.asm) file
                         jackAnalyzer
+                           [-i] | --input      : filename of input (.jack) file or folder containing them
+                        jackCompiler
                            [-i] | --input      : filename of input (.jack) file or folder containing them
                            
                            -h   | --help       : display this help message
